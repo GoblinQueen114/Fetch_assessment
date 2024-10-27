@@ -1,0 +1,32 @@
+-- Basic Data Quality Check
+SELECT 
+    -- Total Records
+    COUNT(*) as total_records,
+    
+    -- User IDs
+    COUNT(*) - COUNT(DISTINCT ID) as duplicate_ids,
+    
+    -- Missing Data
+    SUM(CASE WHEN ID IS NULL THEN 1 ELSE 0 END) as missing_ids,
+    SUM(CASE WHEN CREATED_DATE IS NULL THEN 1 ELSE 0 END) as missing_created_dates,
+    SUM(CASE WHEN BIRTH_DATE IS NULL THEN 1 ELSE 0 END) as missing_birth_dates,
+    SUM(CASE WHEN STATE IS NULL OR STATE = '' THEN 1 ELSE 0 END) as missing_states,
+    SUM(CASE WHEN LANGUAGE IS NULL OR LANGUAGE = '' THEN 1 ELSE 0 END) as missing_languages,
+    SUM(CASE WHEN GENDER IS NULL OR GENDER = '' THEN 1 ELSE 0 END) as missing_genders,
+    
+     -- Date Validation
+    SUM(CASE WHEN BIRTH_DATE < '1900-01-01' THEN 1 ELSE 0 END) as old_birth_dates,
+    SUM(CASE WHEN BIRTH_DATE > CREATED_DATE THEN 1 ELSE 0 END) as created_before_birthdate,
+
+	-- Format Check
+	    SUM(CASE 
+		 WHEN STATE IS NOT NULL 
+            AND STATE != '' 
+            AND STATE NOT REGEXP '^[A-Z]{2}$'
+		THEN 1 ELSE 0 END) as invalid_state_format,
+	SUM(CASE 
+		WHEN GENDER IS NOT NULL 
+			AND GENDER != '' 
+			AND GENDER NOT IN ('Male', 'Female', 'Other') THEN 1 ELSE 0 END) as invalid_gender_format
+from 
+	users;
