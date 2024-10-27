@@ -1,0 +1,22 @@
+SELECT 
+    COUNT(*) as total_records,
+    
+    -- Missing Value Checks
+    SUM(CASE WHEN RECEIPT_ID IS NULL THEN 1 ELSE 0 END) as no_receipt_id,
+    SUM(CASE WHEN PURCHASE_DATE IS NULL THEN 1 ELSE 0 END) as no_purchase_date,
+    SUM(CASE WHEN SCAN_DATE IS NULL THEN 1 ELSE 0 END) as no_scan_date,
+    SUM(CASE WHEN STORE_NAME IS NULL OR STORE_NAME = '' THEN 1 ELSE 0 END) as no_store_name,
+    SUM(CASE WHEN USER_ID IS NULL THEN 1 ELSE 0 END) as no_user_id,
+    SUM(CASE WHEN BARCODE IS NULL OR BARCODE = '' THEN 1 ELSE 0 END) as no_barcode,
+    SUM(CASE WHEN FINAL_QUANTITY IS NULL THEN 1 ELSE 0 END) as no_final_quantity,
+    SUM(CASE WHEN FINAL_SALE IS NULL THEN 1 ELSE 0 END) as no_final_sale,
+    
+    -- Duplicate Checks
+    COUNT(*) - COUNT(DISTINCT RECEIPT_ID) as duplicate_receipt_ids,
+    
+    -- Date Logic Checks
+    SUM(CASE WHEN SCAN_DATE < PURCHASE_DATE THEN 1 ELSE 0 END) as scan_before_purchase,
+    SUM(CASE WHEN PURCHASE_DATE > CURRENT_DATE THEN 1 ELSE 0 END) as future_purchase_dates,
+    SUM(CASE WHEN SCAN_DATE > CURRENT_DATE THEN 1 ELSE 0 END) as future_scan_dates
+from 
+	transactions;
